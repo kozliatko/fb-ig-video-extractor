@@ -71,12 +71,31 @@ The three required for any deployment: `TELEGRAM_BOT_TOKEN`, `GEMINI_API_KEY`,
 
 ## Google Sheets structure (Sheet1)
 
-| A: Date | B: URL | C: Author | D: Title | E: Place | F: Lat | G: Lng | H: Category | I: Tags | J: Summary | K: Transcript | L: Source | M: group_id |
+| A: Date | B: URL | C: Author | D: Title | E: Place | F: Lat | G: Lng | H: Category | I: Tags | J: Summary | K: Transcript | L: Source | M: group_id | N: video_id | O: visited | P: place_id | Q: maps_url | R: geo_source | S: media_type |
 
 **M: group_id** — places with the same group_id are shown on the map as a single
 pin with multiple videos. Merging is proposed by Claude Haiku (the dedup command
 in Telegram → Merge/Keep buttons). See `dedup.py`. Merging deletes nothing and is
 reversible (clear the group_id in the sheet).
+
+**N: video_id** — the platform video ID from yt-dlp, independent of the URL.
+Used by `find_duplicate()` to catch the same content sent again via a
+different share link, which a plain URL comparison would miss.
+
+**O: visited** — marked from the map (or `/visited`); the historical Czech
+`"ano"` marker is still accepted alongside `true`/`1`/`x`.
+
+**P: place_id** — Google Places ID, the precise identity of the place. Used
+to merge duplicates by the same real-world place and to fetch a fallback
+photo for the map thumbnail (see `thumbnails.py`, `geocoder.py`).
+
+**Q: maps_url** — direct Google Maps link sent back in the bot's reply.
+
+**R: geo_source** — where the coordinates came from: AI estimate vs. Google
+Places geocoding vs. `kml` (My Maps import).
+
+**S: media_type** — `video` / `photo` / `poi`. Rows written before this
+column existed are treated as `video`.
 
 ## Supported URL formats
 
