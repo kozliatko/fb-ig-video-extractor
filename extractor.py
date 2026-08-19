@@ -62,12 +62,21 @@ _cookie_path_cache = None
 def _resolve_cookies() -> str | None:
     """Return the path to the cookies file.
     Locally: COOKIES_FILE = path to the file.
-    On the server: INSTAGRAM_COOKIES = contents of cookies.txt (written to a temp file)."""
+    On the server: INSTAGRAM_COOKIES = contents of cookies.txt (written to a temp file).
+    Simplest for Instagram: INSTAGRAM_SESSIONID = just the "sessionid" cookie
+    value (DevTools -> Application -> Cookies -> instagram.com) - Instagram's
+    own auth rides on that single cookie, so a full browser export isn't
+    needed; a minimal Netscape-format cookies.txt is built from it here."""
     global _cookie_path_cache
     path = os.getenv("COOKIES_FILE")
     if path and os.path.exists(path):
         return path
     content = os.getenv("INSTAGRAM_COOKIES")
+    if not content:
+        sessionid = os.getenv("INSTAGRAM_SESSIONID", "").strip()
+        if sessionid:
+            content = ("# Netscape HTTP Cookie File\n"
+                       f".instagram.com\tTRUE\t/\tTRUE\t2147483647\tsessionid\t{sessionid}\n")
     if content:
         if _cookie_path_cache and os.path.exists(_cookie_path_cache):
             return _cookie_path_cache

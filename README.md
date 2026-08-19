@@ -195,7 +195,10 @@ request.
   Instagram usually blocks anonymous downloads ("login required"). Solution:
   export cookies of a logged-in account (an extension like *Get cookies.txt*)
   and set `INSTAGRAM_COOKIES` (file content) or `COOKIES_FILE` (file path).
-  Cookies expire from time to time and need refreshing.
+  Simplest: set `INSTAGRAM_SESSIONID` to just the `sessionid` cookie's value
+  (DevTools → Application → Cookies → instagram.com) — Instagram's auth rides
+  on that one cookie, no full browser export needed. Cookies (and the
+  sessionid) expire from time to time and need refreshing.
 - **Facebook occasionally blocks datacenter IPs.** It usually works
   anonymously, but when blocked, the same cookie approach helps. Check your
   instance's state at the `/debug?token=MAP_TOKEN` endpoint.

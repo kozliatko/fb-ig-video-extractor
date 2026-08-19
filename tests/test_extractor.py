@@ -1,6 +1,8 @@
 """Tests for detecting the source from a URL and the video length limit."""
+import os
+
 import extractor
-from extractor import duration_error, extract_source
+from extractor import _resolve_cookies, duration_error, extract_source
 
 
 class TestExtractSource:
@@ -53,3 +55,32 @@ class TestDurationError:
     def test_limit_zero_disables_check(self, monkeypatch):
         monkeypatch.setattr(extractor, "MAX_VIDEO_MINUTES", 0)
         assert duration_error({"duration": 10 * 3600}) is None
+
+
+class TestResolveCookies:
+    def _clear_env(self, monkeypatch):
+        monkeypatch.setattr(extractor, "_cookie_path_cache", None)
+        for var in ("COOKIES_FILE", "INSTAGRAM_COOKIES", "INSTAGRAM_SESSIONID"):
+            monkeypatch.delenv(var, raising=False)
+
+    def test_none_configured(self, monkeypatch):
+        self._clear_env(monkeypatch)
+        assert _resolve_cookies() is None
+
+    def test_sessionid_builds_netscape_cookie_file(self, monkeypatch):
+        self._clear_env(monkeypatch)
+        monkeypatch.setenv("INSTAGRAM_SESSIONID", "abc123")
+        path = _resolve_cookies()
+        assert path and os.path.exists(path)
+        content = open(path, encoding="utf-8").read()
+        assert ".instagram.com" in content
+        assert "sessionid" in content
+        assert "abc123" in content
+
+    def test_instagram_cookies_takes_priority_over_sessionid(self, monkeypatch):
+        self._clear_env(monkeypatch)
+        monkeypatch.setenv("INSTAGRAM_COOKIES", "# Netscape HTTP Cookie File\nfull export")
+        monkeypatch.setenv("INSTAGRAM_SESSIONID", "abc123")
+        path = _resolve_cookies()
+        content = open(path, encoding="utf-8").read()
+        assert content == "# Netscape HTTP Cookie File\nfull export"

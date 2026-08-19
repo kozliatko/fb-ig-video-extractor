@@ -189,7 +189,10 @@ Obojí automaticky kontroluje GitHub Actions na každý push a pull request.
   anonymní stahování většinou blokuje („login required"). Řešení: exportuj
   cookies přihlášeného účtu (rozšíření typu *Get cookies.txt*) a nastav
   `INSTAGRAM_COOKIES` (obsah souboru) nebo `COOKIES_FILE` (cesta k souboru).
-  Cookies občas vyprší a je potřeba je obnovit.
+  Nejjednodušší: nastav `INSTAGRAM_SESSIONID` jen na hodnotu cookie
+  `sessionid` (DevTools → Application → Cookies → instagram.com) — Instagram
+  autentifikaci nese tahle jedna cookie, celý export z prohlížeče není
+  potřeba. Cookies (i sessionid) občas vyprší a je potřeba je obnovit.
 - **Facebook občas blokuje datacenter IP.** Většinou funguje anonymně, ale
   při blokaci pomůže stejný postup s cookies. Stav instance zjistíš na
   endpointu `/debug?token=MAP_TOKEN`.
