@@ -24,6 +24,8 @@ phone without filling anything in by hand.
 ## How it works
 
 1. You find an interesting video on Facebook, Instagram, TikTok or YouTube
+   (Instagram photo posts and carousels work too, not just Reels — Gemini
+   analyzes the image instead of a video)
 2. You tap "Share" → copy the URL → send it to your bot on Telegram
    (shortened share links work too: `fb.watch`, `vm.tiktok.com`, `youtu.be`)
 3. The bot replies within ~30 seconds:
@@ -39,7 +41,12 @@ phone without filling anything in by hand.
 4. The place is saved to Google Sheets including precise GPS coordinates
    (Google Places), an audio transcript and a Google Maps link
 5. On `/map` you see all places on a map — filtering by categories and tags,
-   marking visited places, merging duplicates
+   a full-text search bar (diacritics-insensitive, always visible), a 📍
+   button to center the map on your current location, marking visited places,
+   merging duplicates, and a small photo preview in each place's popup
+   (pulled from its own video/photo, or from Google Places as a fallback).
+   The map can also be installed as an app on your phone's home screen
+   ("Add to Home Screen" / "Install app").
 
 ## Tech stack
 
@@ -77,7 +84,8 @@ Create API key → `GEMINI_API_KEY`. The free tier is more than enough.
 
 ### 4. Optional keys and settings
 - `GOOGLE_MAPS_API_KEY` — precise place coordinates (Places API New;
-  without it, AI estimates are used)
+  without it, AI estimates are used); also supplies the map popup's photo
+  preview for places whose own video/photo has no usable thumbnail
 - `ANTHROPIC_API_KEY` — duplicate-place check via the `/dedup` command
 - `MAP_TOKEN` — map protection (without it the map is public)
 - `MAP_VIEW_TOKEN` — separate read-only map token, safe to share (viewing

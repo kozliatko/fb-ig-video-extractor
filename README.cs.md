@@ -22,6 +22,8 @@ výlety, restaurace...). Chci je jednoduše uložit z telefonu bez ručního vyp
 ## Jak to funguje
 
 1. Najdeš zajímavé video na Facebooku, Instagramu, TikToku nebo YouTube
+   (funguje i fotka nebo carousel z Instagramu, ne jen Reels — Gemini v tom
+   případě analyzuje obrázek místo videa)
 2. Klikneš "Sdílet" → zkopíruješ URL → pošleš svému botovi v Telegramu
    (fungují i zkrácené share linky: `fb.watch`, `vm.tiktok.com`, `youtu.be`)
 3. Bot do ~30 sekund odpoví:
@@ -37,7 +39,12 @@ výlety, restaurace...). Chci je jednoduše uložit z telefonu bez ručního vyp
 4. Místo se uloží do Google Sheets včetně přesných GPS souřadnic (Google
    Places), přepisu zvuku a odkazu na Google Maps
 5. Na `/map` vidíš všechna místa na mapě — filtrování podle kategorií a tagů,
-   označování navštívených míst, slučování duplicit
+   trvale viditelnou fulltextovou vyhledávací lištu (necitlivou na diakritiku),
+   tlačítko 📍 pro vycentrování mapy na aktuální polohu, označování
+   navštívených míst, slučování duplicit a malý náhled fotky v popup okně
+   každého místa (z vlastního videa/fotky, případně jako fallback z Google
+   Places). Mapu jde taky nainstalovat jako appku na plochu telefonu
+   ("Přidat na plochu" / "Instalovat aplikaci").
 
 ## Technologie
 
@@ -74,7 +81,8 @@ Create API key → `GEMINI_API_KEY`. Free tier bohatě stačí.
 
 ### 4. Volitelné klíče a nastavení
 - `GOOGLE_MAPS_API_KEY` — přesné souřadnice míst (Places API New; bez něj se
-  použijí odhady AI)
+  použijí odhady AI); zároveň slouží jako zdroj náhledové fotky v popup okně
+  mapy pro místa, jejichž vlastní video/fotka nemá použitelný náhled
 - `ANTHROPIC_API_KEY` — kontrola duplicitních míst příkazem `/zkontroluj`
 - `MAP_TOKEN` — ochrana mapy (bez něj je mapa veřejná)
 - `MAP_VIEW_TOKEN` — samostatný read-only token mapy, bezpečný na sdílení
