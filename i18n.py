@@ -67,6 +67,8 @@ MESSAGES = {
                            "Pomůže nastavit cookies přihlášeného účtu – viz Známé limity v README.",
         "err_no_audio": "🔇 Z videa se nepodařilo získat zvukovou stopu (možná nemá zvuk). "
                         "Zkus prosím jiné video.",
+        "err_network": "🌐 Stahování přerušilo dočasné síťové zaseknutí. Zkus to prosím "
+                       "ještě jednou – většinou to na druhý pokus projde.",
         "err_generic": "❌ Něco se nepovedlo: {err}",
         "err_video_too_long": "video je příliš dlouhé ({minutes:.0f} min, limit {limit} min)",
         "gemini_not_processed": "Gemini nezpracoval video (stav {state})",
@@ -150,6 +152,8 @@ MESSAGES = {
                            "limitations in the README.",
         "err_no_audio": "🔇 Couldn't extract the audio track from the video (it may have "
                         "no sound). Please try another video.",
+        "err_network": "🌐 The download was interrupted by a temporary network hiccup. "
+                       "Please try again – it usually goes through on the second attempt.",
         "err_generic": "❌ Something went wrong: {err}",
         "err_video_too_long": "video is too long ({minutes:.0f} min, limit {limit} min)",
         "gemini_not_processed": "Gemini failed to process the video (state {state})",

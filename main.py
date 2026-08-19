@@ -203,6 +203,8 @@ def friendly_error(err: str) -> str:
         return t("err_youtube_bot")
     if "audio codec" in low or "ffprobe" in low or "requested format" in low:
         return t("err_no_audio")
+    if "timed out" in low or "connection" in low:
+        return t("err_network")
     return t("err_generic", err=err[:200])
 
 

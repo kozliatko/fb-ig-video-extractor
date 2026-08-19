@@ -3,6 +3,7 @@ import os
 import re
 import shutil
 import tempfile
+import time
 import httpx
 import yt_dlp
 
@@ -108,6 +109,12 @@ def download_media(url: str) -> tuple[str, dict]:
         "outtmpl": output_template,
         "quiet": True,
         "no_warnings": True,
+        # Explicit instead of yt-dlp's defaults, so a stalled CDN connection
+        # (seen on Instagram's fbcdn.net) fails fast and predictably instead
+        # of hanging on the default socket timeout.
+        "socket_timeout": 30,
+        "retries": 5,
+        "fragment_retries": 5,
     }
 
     # Cookies are a workaround for platforms that block anonymous downloads from
@@ -129,23 +136,34 @@ def download_media(url: str) -> tuple[str, dict]:
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            try:
-                info = ydl.extract_info(url, download=True)
-            except yt_dlp.utils.DownloadError as e:
-                # yt-dlp's Instagram extractor has no downloadable formats for
-                # photo posts at all (video-only) - fall back to grabbing the
-                # photo directly instead of failing the post. Carousels raise
-                # a generic message from the playlist wrapper and still expose
-                # raw entries/thumbnails via process=False; single-photo posts
-                # raise from deep inside the extractor itself before any info
-                # is returned at all, so that path needs a page-scrape instead.
-                msg = str(e)
-                if "No video formats found" in msg:
-                    raw = ydl.extract_info(url, download=False, process=False)
-                    return _download_photo(raw, tmp_dir)
-                if "There is no video in this post" in msg:
-                    return _download_photo_via_webpage(url, tmp_dir)
-                raise
+            # A stalled CDN connection can still exhaust yt-dlp's own
+            # socket_timeout/retries above (a dropped connection, not just a
+            # slow fragment) - one extra full attempt covers that case, since
+            # a fresh connection on retry usually succeeds.
+            info = None
+            for attempt in (1, 2):
+                try:
+                    info = ydl.extract_info(url, download=True)
+                    break
+                except yt_dlp.utils.DownloadError as e:
+                    # yt-dlp's Instagram extractor has no downloadable formats for
+                    # photo posts at all (video-only) - fall back to grabbing the
+                    # photo directly instead of failing the post. Carousels raise
+                    # a generic message from the playlist wrapper and still expose
+                    # raw entries/thumbnails via process=False; single-photo posts
+                    # raise from deep inside the extractor itself before any info
+                    # is returned at all, so that path needs a page-scrape instead.
+                    msg = str(e)
+                    if "No video formats found" in msg:
+                        raw = ydl.extract_info(url, download=False, process=False)
+                        return _download_photo(raw, tmp_dir)
+                    if "There is no video in this post" in msg:
+                        return _download_photo_via_webpage(url, tmp_dir)
+                    low = msg.lower()
+                    if attempt == 1 and ("timed out" in low or "connection" in low):
+                        time.sleep(3)
+                        continue
+                    raise
             err = duration_error(info)
             if err:
                 raise RuntimeError(err)
