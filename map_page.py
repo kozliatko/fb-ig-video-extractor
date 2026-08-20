@@ -96,8 +96,18 @@ MAP_HTML = r"""<!DOCTYPE html>
   .popup-cat { display: inline-block; color: #fff; border-radius: 6px; padding: 1px 7px; font-size: 12px; margin-bottom: 6px; }
   .popup-tags { color: #666; font-size: 12px; margin-bottom: 6px; }
   .popup-summary { font-size: 13px; line-height: 1.4; margin-bottom: 8px; }
-  .popup-link { font-size: 13px; }
+  .popup-link { font-size: 13px; display: flex; align-items: center; gap: 5px; }
   .popup-sender { color: #888; font-size: 11px; }
+  .src-badge {
+    display: inline-flex; flex: none; align-items: center; justify-content: center;
+    width: 15px; height: 15px; border-radius: 4px; font-size: 8px; font-weight: 700;
+    color: #fff; line-height: 1; letter-spacing: -0.3px;
+  }
+  .src-facebook { background: #1877f2; }
+  .src-instagram { background: radial-gradient(circle at 30% 110%, #fdf497, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%); }
+  .src-youtube { background: #ff0000; border-radius: 3px; }
+  .src-tiktok { background: #010101; }
+  .src-unknown { background: #9e9e9e; }
   .visit-btn {
     display: block; width: 100%; margin-top: 8px; padding: 6px 10px;
     border: 1px solid #4caf50; border-radius: 8px; background: #fff; color: #2e7d32;
@@ -235,6 +245,25 @@ function parseTags(s){ return (s||"").split(",").map(t => t.trim()).filter(Boole
 // Diacritics-insensitive lowercase, same idea as _fold() in main.py's /search command.
 function fold(s){ return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
 
+// Small colored platform badge for a video/photo link. "source" comes from the
+// sheet (set by extract_source() in extractor.py); if it's missing or wasn't
+// recognized there (older rows, "unknown"), guess again from the URL itself -
+// same host matching as extract_source(), just duplicated client-side.
+function sourceBadge(source, url){
+  const guess = (u) => {
+    if(!u) return "unknown";
+    if(u.includes("instagram.com")) return "instagram";
+    if(u.includes("facebook.com") || u.includes("fb.watch")) return "facebook";
+    if(u.includes("tiktok.com")) return "tiktok";
+    if(u.includes("youtube.com") || u.includes("youtu.be")) return "youtube";
+    return "unknown";
+  };
+  const platform = (source && source !== "unknown") ? source : guess(url);
+  const labels = { facebook: "f", instagram: "IG", youtube: "YT", tiktok: "TT", unknown: "?" };
+  const cls = labels[platform] ? platform : "unknown";
+  return '<span class="src-badge src-'+cls+'">'+(labels[cls])+'</span>';
+}
+
 // Collapsible filter panel (on mobile it would otherwise cover the map)
 const body = document.getElementById("panel-body");
 const toggleBtn = document.getElementById("toggle");
@@ -304,7 +333,7 @@ function buildPopup(key){
         ? (isPhoto ? T.photoN(i+1, esc(p.date||"")) : T.videoN(i+1, esc(p.date||"")))
         : (isPhoto ? T.openPhoto : T.openVideo);
       const sentBy = p.sender ? ' <span class="popup-sender">– '+T.sentBy(esc(p.sender))+'</span>' : '';
-      html += '<div class="popup-link">'+icon+' <a href="'+esc(p.url)+'" target="_blank" rel="noopener">'+label+'</a>'+sentBy+'</div>';
+      html += '<div class="popup-link">'+sourceBadge(p.source, p.url)+icon+' <a href="'+esc(p.url)+'" target="_blank" rel="noopener">'+label+'</a>'+sentBy+'</div>';
     }
   });
   const mapsUrl = rep.maps_url || ("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(rep.location_name));
