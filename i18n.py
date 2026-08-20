@@ -81,6 +81,9 @@ MESSAGES = {
         # {cmd} is filled in by the caller via command_name() from the BOT_COMMANDS registry
         "search_usage": "Použití: {cmd} <text>\nnapř. {cmd} tobogán",
         "dedup_started": "🔍 Kontroluji duplicitní místa, chvíli počkej...",
+        "map_reply": "🗺️ {url}",
+        "map_no_public_url": "⚠️ PUBLIC_URL není nastavená, takže neznám veřejnou "
+                             "adresu instance – mapu proto nemůžu odkázat.",
         # {commands} is filled in by help_text() from the BOT_COMMANDS registry
         "help": "📖 Co umím:\n\n"
                 "🎬 Pošli mi URL videa (Facebook/Instagram Reels, TikTok, "
@@ -165,6 +168,9 @@ MESSAGES = {
         # {cmd} is filled in by the caller via command_name() from the BOT_COMMANDS registry
         "search_usage": "Usage: {cmd} <text>\ne.g. {cmd} waterslide",
         "dedup_started": "🔍 Checking for duplicate places, hang on...",
+        "map_reply": "🗺️ {url}",
+        "map_no_public_url": "⚠️ PUBLIC_URL is not set, so I don't know the "
+                             "instance's public address – can't link the map.",
         # {commands} is filled in by help_text() from the BOT_COMMANDS registry
         "help": "📖 What I can do:\n\n"
                 "🎬 Send me a video URL (Facebook/Instagram Reels, TikTok, "
@@ -238,6 +244,14 @@ BOT_COMMANDS = [
         "arg": "",
         "desc": {"cs": "Kontrola duplicitních míst (návrhy na sloučení)",
                  "en": "Check for duplicate places (merge suggestions)"},
+    },
+    {
+        "key": "map",
+        "name": {"cs": "mapa", "en": "map"},
+        "extra_aliases": (),
+        "arg": "",
+        "desc": {"cs": "Pošle read-only odkaz na mapu",
+                 "en": "Send a read-only link to the map"},
     },
     {
         "key": "id",

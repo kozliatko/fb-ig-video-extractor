@@ -167,6 +167,8 @@ Detailní technická dokumentace: [CLAUDE.md](CLAUDE.md) · plán featur:
 - pošli svoji polohu (Telegram attachment Location) → nejbližší uložená místa
 - `/hledej <text>` (alias `/search`) — hledání v uložených místech
 - `/zkontroluj` (alias `/dedup`) — kontrola duplicitních míst
+- `/mapa` (alias `/map`) — pošle read-only odkaz na mapu (`MAP_VIEW_TOKEN`,
+  pokud je nastavený, jinak `MAP_TOKEN`)
 - `/id` — tvoje Telegram user ID (pro nastavení whitelistu)
 - `/help` (aliasy `/start`, `/napoveda`) — vypíše všechny příkazy
 

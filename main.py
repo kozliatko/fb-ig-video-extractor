@@ -282,6 +282,17 @@ async def webhook(request: Request):
         task.add_done_callback(_background_tasks.discard)
         return {"ok": True}
 
+    # Command: read-only link to the map (MAP_VIEW_TOKEN when set, else MAP_TOKEN)
+    if is_command(text, *command_aliases("map")):
+        base = _public_url()
+        if not base:
+            await send_message(chat_id, t("map_no_public_url"))
+            return {"ok": True}
+        token = MAP_VIEW_TOKEN or MAP_TOKEN
+        url = f"{base}/map?token={token}" if token else f"{base}/map"
+        await send_message(chat_id, t("map_reply", url=url))
+        return {"ok": True}
+
     if not is_valid_url(text):
         await send_message(chat_id, help_text())
         return {"ok": True}

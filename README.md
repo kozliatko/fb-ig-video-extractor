@@ -172,6 +172,8 @@ Detailed technical docs: [CLAUDE.md](CLAUDE.md) · feature plan:
 - send your location (Telegram Location attachment) → closest saved places
 - `/search <text>` (alias `/hledej`) — search your saved places
 - `/dedup` (alias `/zkontroluj`) — check for duplicate places
+- `/map` (alias `/mapa`) — send a read-only link to the map (`MAP_VIEW_TOKEN`
+  if set, otherwise `MAP_TOKEN`)
 - `/id` — your Telegram user ID (for setting up the whitelist)
 - `/help` (aliases `/start`, `/napoveda`) — list all commands
 
