@@ -5,7 +5,7 @@ import pytest
 
 import main
 from main import (_parse_allowed_users, _token_matches, friendly_error,
-                  is_command, is_valid_url, telegram_call)
+                  is_command, is_valid_url, sender_name, telegram_call)
 
 
 class TestIsValidUrl:
@@ -121,6 +121,20 @@ class TestAllowedUsers:
         monkeypatch.setattr(main, "ALLOWED_USERS", set())
         assert main.is_authorized(7)
         assert main.is_authorized(None)
+
+
+class TestSenderName:
+    def test_first_and_last_name(self):
+        assert sender_name({"id": 1, "first_name": "Jan", "last_name": "Novák"}) == "Jan Novák"
+
+    def test_first_name_only(self):
+        assert sender_name({"id": 1, "first_name": "Jan"}) == "Jan"
+
+    def test_falls_back_to_username(self):
+        assert sender_name({"id": 1, "username": "honza"}) == "@honza"
+
+    def test_falls_back_to_id(self):
+        assert sender_name({"id": 42}) == "42"
 
 
 class TestTokenMatches:

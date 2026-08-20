@@ -48,6 +48,17 @@ def is_authorized(user_id: int | None) -> bool:
     return not ALLOWED_USERS or user_id in ALLOWED_USERS
 
 
+def sender_name(from_user: dict) -> str:
+    """Display name of the Telegram sender: 'First Last', falling back to
+    @username or the numeric id if names are unset."""
+    name = " ".join(p for p in (from_user.get("first_name"), from_user.get("last_name")) if p)
+    if name:
+        return name
+    if from_user.get("username"):
+        return f"@{from_user['username']}"
+    return str(from_user.get("id") or "")
+
+
 def is_command(text: str, *cmds: str) -> bool:
     """Exact command match: '/id' and '/id@BotName', but not '/idea'.
     Multiple names = aliases (Czech and English commands always both work)."""
@@ -236,7 +247,8 @@ async def webhook(request: Request):
 
     chat_id = message["chat"]["id"]
     text = (message.get("text") or "").strip()
-    user_id = (message.get("from") or {}).get("id")
+    from_user = message.get("from") or {}
+    user_id = from_user.get("id")
 
     # /id works for everyone – needed for the initial whitelist setup
     if is_command(text, *command_aliases("id")) and user_id is not None:
@@ -299,14 +311,14 @@ async def webhook(request: Request):
 
     # Processed in a background task so the webhook responds quickly.
     # The reference is kept in _background_tasks, otherwise the GC could collect it mid-run.
-    task = asyncio.create_task(process_video(chat_id, text))
+    task = asyncio.create_task(process_video(chat_id, text, sender_name(from_user)))
     _background_tasks.add(task)
     task.add_done_callback(_background_tasks.discard)
 
     return {"ok": True}
 
 
-async def process_video(chat_id: int, url: str) -> None:
+async def process_video(chat_id: int, url: str, sender: str = "") -> None:
     media_path = None
     try:
         # 1) Quick duplicate check by URL (before downloading, free)
@@ -333,6 +345,7 @@ async def process_video(chat_id: int, url: str) -> None:
         # 4) Analysis via Gemini
         metadata = await asyncio.to_thread(analyze, media_path, url, yt_info)
         metadata.video_id = video_id
+        metadata.sender = sender
 
         # 5) Geocoding: exact coordinates + place_id + Google Maps link
         geo = await asyncio.to_thread(geocode, metadata.location_name, metadata.city)

@@ -97,6 +97,7 @@ MAP_HTML = r"""<!DOCTYPE html>
   .popup-tags { color: #666; font-size: 12px; margin-bottom: 6px; }
   .popup-summary { font-size: 13px; line-height: 1.4; margin-bottom: 8px; }
   .popup-link { font-size: 13px; }
+  .popup-sender { color: #888; font-size: 11px; }
   .visit-btn {
     display: block; width: 100%; margin-top: 8px; padding: 6px 10px;
     border: 1px solid #4caf50; border-radius: 8px; background: #fff; color: #2e7d32;
@@ -169,6 +170,7 @@ const TEXTS = {
     openVideo: "Otevřít video", videoN: (n, date) => "Video " + n + " (" + date + ")",
     openPhoto: "Otevřít fotku", photoN: (n, date) => "Fotka " + n + " (" + date + ")",
     openMaps: "Otevřít v Google Maps",
+    sentBy: (name) => "poslal(a) " + name,
     approx: "⚠️ přibližná poloha (odhad AI)",
     visit: "✅ Už jsme navštívili", unvisit: "↩️ Vrátit mezi nenavštívené",
     del: "🗑️ Smazat místo", delConfirm: "‼️ Opravdu úplně smazat? Klikni znovu",
@@ -189,6 +191,7 @@ const TEXTS = {
     openVideo: "Open video", videoN: (n, date) => "Video " + n + " (" + date + ")",
     openPhoto: "Open photo", photoN: (n, date) => "Photo " + n + " (" + date + ")",
     openMaps: "Open in Google Maps",
+    sentBy: (name) => "sent by " + name,
     approx: "⚠️ approximate location (AI estimate)",
     visit: "✅ Mark as visited", unvisit: "↩️ Mark as not visited",
     del: "🗑️ Delete place", delConfirm: "‼️ Really delete? Click again",
@@ -300,7 +303,8 @@ function buildPopup(key){
       const label = group.length > 1
         ? (isPhoto ? T.photoN(i+1, esc(p.date||"")) : T.videoN(i+1, esc(p.date||"")))
         : (isPhoto ? T.openPhoto : T.openVideo);
-      html += '<div class="popup-link">'+icon+' <a href="'+esc(p.url)+'" target="_blank" rel="noopener">'+label+'</a></div>';
+      const sentBy = p.sender ? ' <span class="popup-sender">– '+T.sentBy(esc(p.sender))+'</span>' : '';
+      html += '<div class="popup-link">'+icon+' <a href="'+esc(p.url)+'" target="_blank" rel="noopener">'+label+'</a>'+sentBy+'</div>';
     }
   });
   const mapsUrl = rep.maps_url || ("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(rep.location_name));

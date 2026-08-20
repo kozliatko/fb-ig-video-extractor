@@ -23,6 +23,7 @@ class VideoMetadata:
     maps_url: str = ""
     geo_source: str = ""   # "places" = exact from Google, "gemini" = AI estimate
     media_type: str = "video"  # "video" or "photo" – which prompt/mime analyze() used
+    sender: str = ""       # Telegram sender's display name (who sent the URL to the bot)
     city: str = ""         # town – only for the geocoding query, not stored in the sheet
     created_at: datetime = field(default_factory=datetime.now)
 
@@ -47,4 +48,5 @@ class VideoMetadata:
             self.maps_url,
             self.geo_source,
             self.media_type,
+            self.sender,
         ]

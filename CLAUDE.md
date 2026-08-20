@@ -71,7 +71,7 @@ The three required for any deployment: `TELEGRAM_BOT_TOKEN`, `GEMINI_API_KEY`,
 
 ## Google Sheets structure (Sheet1)
 
-| A: Date | B: URL | C: Author | D: Title | E: Place | F: Lat | G: Lng | H: Category | I: Tags | J: Summary | K: Transcript | L: Source | M: group_id | N: video_id | O: visited | P: place_id | Q: maps_url | R: geo_source | S: media_type |
+| A: Date | B: URL | C: Author | D: Title | E: Place | F: Lat | G: Lng | H: Category | I: Tags | J: Summary | K: Transcript | L: Source | M: group_id | N: video_id | O: visited | P: place_id | Q: maps_url | R: geo_source | S: media_type | T: sender |
 
 **M: group_id** — places with the same group_id are shown on the map as a single
 pin with multiple videos. Merging is proposed by Claude Haiku (the dedup command
@@ -96,6 +96,12 @@ Places geocoding vs. `kml` (My Maps import).
 
 **S: media_type** — `video` / `photo` / `poi`. Rows written before this
 column existed are treated as `video`.
+
+**T: sender** — display name of the Telegram user who sent the URL to the bot
+(`"First Last"`, falling back to `@username` or the numeric user ID – see
+`sender_name()` in `main.py`). Shown in the map popup next to each video/photo
+link. Empty for rows written before this column existed and for POI rows
+imported from My Maps (no Telegram sender).
 
 ## Supported URL formats
 

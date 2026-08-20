@@ -13,8 +13,9 @@ _client = None
 
 # Columns: A date, B url, C author, D title, E place, F lat, G lng,
 #          H category, I tags, J summary, K transcript, L source, M group_id,
-#          N video_id, O visited, P place_id, Q maps_url, R geo_source, S media_type
-NUM_COLS = 19
+#          N video_id, O visited, P place_id, Q maps_url, R geo_source, S media_type,
+#          T sender
+NUM_COLS = 20
 URL_COL = 2
 GROUP_COL = 13
 VIDEO_ID_COL = 14
@@ -96,6 +97,7 @@ def _parse_row(row: list, row_number: int) -> dict | None:
         "geo_source": (row[17] or "").strip(),
         # Older rows predate this column - they are all videos.
         "media_type": (row[18] or "video").strip(),
+        "sender": (row[19] or "").strip(),
         # Cache key for /thumb/<key>.jpg - hashed from the url, not the row
         # number, so it survives rows shifting after a delete (see thumbnails.py).
         "thumb_key": thumb_key(row[1]),
