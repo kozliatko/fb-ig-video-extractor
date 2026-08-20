@@ -41,6 +41,9 @@ MAP_HTML = r"""<!DOCTYPE html>
 <meta name="apple-mobile-web-app-title" id="apple-title" content="">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<!-- Font Awesome Free (brands subset) - real platform logo glyphs for the popup's source badge -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/fontawesome.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/brands.min.css"/>
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; font-family: -apple-system, Segoe UI, Roboto, sans-serif; }
@@ -98,16 +101,11 @@ MAP_HTML = r"""<!DOCTYPE html>
   .popup-summary { font-size: 13px; line-height: 1.4; margin-bottom: 8px; }
   .popup-link { font-size: 13px; display: flex; align-items: center; gap: 5px; }
   .popup-sender { color: #888; font-size: 11px; }
-  .src-badge {
-    display: inline-flex; flex: none; align-items: center; justify-content: center;
-    width: 15px; height: 15px; border-radius: 4px; font-size: 8px; font-weight: 700;
-    color: #fff; line-height: 1; letter-spacing: -0.3px;
-  }
-  .src-facebook { background: #1877f2; }
-  .src-instagram { background: radial-gradient(circle at 30% 110%, #fdf497, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%); }
-  .src-youtube { background: #ff0000; border-radius: 3px; }
-  .src-tiktok { background: #010101; }
-  .src-unknown { background: #9e9e9e; }
+  .src-icon { flex: none; font-size: 13px; }
+  .src-facebook { color: #1877f2; }
+  .src-instagram { color: #d6249f; }
+  .src-youtube { color: #ff0000; }
+  .src-tiktok { color: #010101; }
   .visit-btn {
     display: block; width: 100%; margin-top: 8px; padding: 6px 10px;
     border: 1px solid #4caf50; border-radius: 8px; background: #fff; color: #2e7d32;
@@ -245,10 +243,11 @@ function parseTags(s){ return (s||"").split(",").map(t => t.trim()).filter(Boole
 // Diacritics-insensitive lowercase, same idea as _fold() in main.py's /search command.
 function fold(s){ return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
 
-// Small colored platform badge for a video/photo link. "source" comes from the
-// sheet (set by extract_source() in extractor.py); if it's missing or wasn't
-// recognized there (older rows, "unknown"), guess again from the URL itself -
-// same host matching as extract_source(), just duplicated client-side.
+// Platform logo (Font Awesome brand glyph) for a video/photo link. "source"
+// comes from the sheet (set by extract_source() in extractor.py); if it's
+// missing or wasn't recognized there (older rows, "unknown"), guess again
+// from the URL itself - same host matching as extract_source(), just
+// duplicated client-side. No icon (empty string) when nothing matches.
 function sourceBadge(source, url){
   const guess = (u) => {
     if(!u) return "unknown";
@@ -259,9 +258,10 @@ function sourceBadge(source, url){
     return "unknown";
   };
   const platform = (source && source !== "unknown") ? source : guess(url);
-  const labels = { facebook: "f", instagram: "IG", youtube: "YT", tiktok: "TT", unknown: "?" };
-  const cls = labels[platform] ? platform : "unknown";
-  return '<span class="src-badge src-'+cls+'">'+(labels[cls])+'</span>';
+  const faIcon = { facebook: "fa-facebook-f", instagram: "fa-instagram",
+                    youtube: "fa-youtube", tiktok: "fa-tiktok" }[platform];
+  if(!faIcon) return "";
+  return '<i class="fa-brands '+faIcon+' src-icon src-'+platform+'"></i>';
 }
 
 // Collapsible filter panel (on mobile it would otherwise cover the map)
