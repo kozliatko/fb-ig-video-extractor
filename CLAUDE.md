@@ -26,6 +26,15 @@ datacenter IP Facebook does not offer a separate audio stream, only video. On to
 of that Gemini reads the text shown in the video, which makes the place
 determination more accurate.
 
+**Downloads are serialized.** `yt_dlp.YoutubeDL.extract_info()` is not safe to
+run concurrently — two videos downloaded at the same time have been observed to
+cross-contaminate results (one video's thumbnail saved under a different,
+unrelated video's row; see the Aug 2026 "Therme Laa/Korytnáči bunker" incident).
+`main.py` guards the download step with a module-level `asyncio.Lock()`
+(`_download_lock`) so at most one `download_media()` call runs at a time; the
+slower `analyze()`/`geocode()`/Sheets steps that follow are unaffected and still
+run concurrently for overlapping requests.
+
 ## Stack
 
 - **Runtime**: Python 3.10+ (verified on 3.10.12 on the production VPS; no construct in the code requires 3.11)
@@ -35,6 +44,9 @@ determination more accurate.
 - **AI (video analysis)**: Google Gemini 2.5 Flash (multimodal video – audio + image)
 - **Database**: Google Sheets (google-auth + gspread)
 - **Hosting**: own VPS (Ubuntu 22.04, systemd + Caddy)
+- **Map**: Leaflet + OpenStreetMap, Font Awesome (brands subset, via cdnjs) for
+  the real platform logos (Facebook/Instagram/YouTube/TikTok) on each place's
+  video/photo link in the popup
 
 ## Key files
 
