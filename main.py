@@ -16,7 +16,8 @@ from extractor import download_media, ffmpeg_diagnostics
 from analyzer import analyze
 from i18n import t, command_aliases, command_name, help_text, menu_commands, LANG
 from sheets import (append_row, read_rows, set_group_ids, new_group_id,
-                    find_duplicate, set_visited, delete_place_rows, find_by_place_id)
+                    find_duplicate, set_visited, delete_place_rows, find_by_place_id,
+                    is_subscribed, add_subscriber, remove_subscriber, list_subscribers)
 from geocoder import geocode, maps_link, distance_km
 from thumbnails import THUMB_DIR, save_thumbnail, delete_thumbnail
 from dedup import find_duplicates
@@ -311,6 +312,16 @@ async def webhook(request: Request):
         await send_message(chat_id, t("map_reply", url=url))
         return {"ok": True}
 
+    # Command: toggle getting a copy of every save, including from other senders
+    if is_command(text, *command_aliases("subscribe")):
+        if await asyncio.to_thread(is_subscribed, chat_id):
+            await asyncio.to_thread(remove_subscriber, chat_id)
+            await send_message(chat_id, t("subscribed_off"))
+        else:
+            await asyncio.to_thread(add_subscriber, chat_id, sender_name(from_user))
+            await send_message(chat_id, t("subscribed_on"))
+        return {"ok": True}
+
     if not is_valid_url(text):
         await send_message(chat_id, help_text())
         return {"ok": True}
@@ -398,6 +409,17 @@ async def process_video(chat_id: int, url: str, sender: str = "") -> None:
                   tags=metadata.tags, summary=metadata.summary,
                   maps_url=metadata.maps_url, precision=precision, group_note=group_note)
         await send_message(chat_id, reply)
+
+        # 9) Copy to subscribers (best-effort - a failed/blocked chat must not
+        # affect the sender's own already-successful save)
+        try:
+            subscribers = await asyncio.to_thread(list_subscribers)
+            notify = t("subscriber_notify", sender=sender or "?", reply=reply)
+            for sub in subscribers:
+                if sub["chat_id"] != chat_id:
+                    await send_message(sub["chat_id"], notify)
+        except Exception as e:
+            print(f"[subscribers] notify failed: {type(e).__name__}: {e}")
 
     except Exception as e:
         await send_message(chat_id, friendly_error(str(e)))

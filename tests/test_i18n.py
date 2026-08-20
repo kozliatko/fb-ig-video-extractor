@@ -65,6 +65,7 @@ class TestBotCommands:
         assert command_aliases("search") == ("/hledej", "/search")
         assert command_aliases("dedup") == ("/zkontroluj", "/dedup")
         assert command_aliases("map") == ("/mapa", "/map")
+        assert command_aliases("subscribe") == ("/odber", "/subscribe")
 
     def test_same_name_in_both_languages_is_not_duplicated(self):
         assert command_aliases("id") == ("/id",)
@@ -81,7 +82,8 @@ class TestBotCommands:
         # conftest sets BOT_LANGUAGE=cs
         menu = menu_commands()
         assert {"command", "description"} == set(menu[0])
-        assert [m["command"] for m in menu] == ["hledej", "zkontroluj", "mapa", "id", "help"]
+        assert [m["command"] for m in menu] == [
+            "hledej", "zkontroluj", "mapa", "odber", "id", "help"]
 
     def test_help_text_contains_all_commands_from_registry(self):
         text = help_text()
@@ -104,7 +106,8 @@ class TestBotCommands:
         monkeypatch.setattr(i18n, "LANG", "en")
         text = help_text()
         assert "/search <text>" in text and "/dedup" in text
-        assert [m["command"] for m in menu_commands()] == ["search", "dedup", "map", "id", "help"]
+        assert [m["command"] for m in menu_commands()] == [
+            "search", "dedup", "map", "subscribe", "id", "help"]
 
 
 class TestMapRender:

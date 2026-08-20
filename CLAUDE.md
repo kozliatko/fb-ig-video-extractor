@@ -115,6 +115,19 @@ column existed are treated as `video`.
 link. Empty for rows written before this column existed and for POI rows
 imported from My Maps (no Telegram sender).
 
+## Subscribers tab
+
+A separate tab (`Subscribers`) in the same spreadsheet – not part of Sheet1 –
+holds the `/subscribe` (`/odber`) opt-in list: chat_id, display name,
+subscribed_at. Chats on this list get a copy of every successful save,
+including ones sent by someone else. Kept in Sheets rather than a local file
+so it survives redeploys without its own mounted volume, same reasoning as
+the place data itself. `sheets.py`'s `_get_subscribers_sheet()` creates the
+tab (with a header row) on first use if it does not exist yet, so no manual
+setup step is needed. See `list_subscribers()` / `add_subscriber()` /
+`remove_subscriber()` / `is_subscribed()` in `sheets.py`, and the notify step
+in `process_video()` in `main.py`.
+
 ## Supported URL formats
 
 - `https://www.facebook.com/reel/ID`

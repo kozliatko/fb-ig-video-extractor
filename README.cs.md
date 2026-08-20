@@ -169,6 +169,9 @@ Detailní technická dokumentace: [CLAUDE.md](CLAUDE.md) · plán featur:
 - `/zkontroluj` (alias `/dedup`) — kontrola duplicitních míst
 - `/mapa` (alias `/map`) — pošle read-only odkaz na mapu (`MAP_VIEW_TOKEN`,
   pokud je nastavený, jinak `MAP_TOKEN`)
+- `/odber` (alias `/subscribe`) — zapne/vypne kopii každého uloženého místa,
+  i když ho pošle někdo jiný (užitečné, pokud je v `TELEGRAM_ALLOWED_USERS`
+  víc než jedno Telegram ID)
 - `/id` — tvoje Telegram user ID (pro nastavení whitelistu)
 - `/help` (aliasy `/start`, `/napoveda`) — vypíše všechny příkazy
 

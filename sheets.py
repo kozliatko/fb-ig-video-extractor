@@ -2,6 +2,8 @@ import json
 import os
 import re
 import uuid
+from datetime import datetime
+
 import gspread
 from google.oauth2.service_account import Credentials
 from i18n import FALLBACK_CATEGORY
@@ -172,3 +174,49 @@ def set_visited(rows: list[int], visited: bool) -> None:
     cells = [gspread.Cell(row=r, col=VISITED_COL, value=value) for r in rows]
     if cells:
         sheet.update_cells(cells, value_input_option="USER_ENTERED")
+
+
+# Separate tab in the same spreadsheet (not Sheet1) for the /subscribe opt-in
+# list – chat_ids that get a copy of every successful save, regardless of who
+# sent it. Kept in Sheets rather than a local file so it survives redeploys
+# without needing its own mounted volume (same reasoning as the place data).
+_SUBSCRIBERS_TAB = "Subscribers"
+
+
+def _get_subscribers_sheet():
+    spreadsheet = _get_client().open_by_key(os.environ["GOOGLE_SHEETS_ID"])
+    try:
+        return spreadsheet.worksheet(_SUBSCRIBERS_TAB)
+    except gspread.WorksheetNotFound:
+        ws = spreadsheet.add_worksheet(title=_SUBSCRIBERS_TAB, rows=100, cols=3)
+        ws.append_row(["chat_id", "name", "subscribed_at"])
+        return ws
+
+
+def list_subscribers() -> list[dict]:
+    """[{chat_id, name}] for every currently subscribed chat."""
+    values = _get_subscribers_sheet().get_all_values()
+    subs = []
+    for row in values[1:]:
+        if row and row[0].strip():
+            subs.append({"chat_id": int(row[0]), "name": row[1] if len(row) > 1 else ""})
+    return subs
+
+
+def is_subscribed(chat_id: int) -> bool:
+    return any(s["chat_id"] == chat_id for s in list_subscribers())
+
+
+def add_subscriber(chat_id: int, name: str) -> None:
+    _get_subscribers_sheet().append_row(
+        [chat_id, name, datetime.now().strftime("%Y-%m-%d %H:%M")],
+        value_input_option="USER_ENTERED")
+
+
+def remove_subscriber(chat_id: int) -> None:
+    sheet = _get_subscribers_sheet()
+    values = sheet.get_all_values()
+    for i, row in enumerate(values, start=1):
+        if row and row[0].strip() == str(chat_id):
+            sheet.delete_rows(i)
+            return

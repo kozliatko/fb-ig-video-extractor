@@ -174,6 +174,9 @@ Detailed technical docs: [CLAUDE.md](CLAUDE.md) · feature plan:
 - `/dedup` (alias `/zkontroluj`) — check for duplicate places
 - `/map` (alias `/mapa`) — send a read-only link to the map (`MAP_VIEW_TOKEN`
   if set, otherwise `MAP_TOKEN`)
+- `/subscribe` (alias `/odber`) — toggle getting a copy of every saved place,
+  including ones sent by someone else (useful once more than one Telegram ID
+  is in `TELEGRAM_ALLOWED_USERS`)
 - `/id` — your Telegram user ID (for setting up the whitelist)
 - `/help` (aliases `/start`, `/napoveda`) — list all commands
 

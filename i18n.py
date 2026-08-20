@@ -84,6 +84,11 @@ MESSAGES = {
         "map_reply": "🗺️ {url}",
         "map_no_public_url": "⚠️ PUBLIC_URL není nastavená, takže neznám veřejnou "
                              "adresu instance – mapu proto nemůžu odkázat.",
+        "subscribed_on": "🔔 Teď ti budu posílat kopii každého uloženého místa, "
+                         "i když ho pošle někdo jiný.",
+        "subscribed_off": "🔕 Kopie cizích uložení jsou vypnuté.",
+        # {sender} = who sent it, {reply} = the normal "saved" confirmation text
+        "subscriber_notify": "👤 {sender} přidal(a) nové místo:\n\n{reply}",
         # {commands} is filled in by help_text() from the BOT_COMMANDS registry
         "help": "📖 Co umím:\n\n"
                 "🎬 Pošli mi URL videa (Facebook/Instagram Reels, TikTok, "
@@ -171,6 +176,11 @@ MESSAGES = {
         "map_reply": "🗺️ {url}",
         "map_no_public_url": "⚠️ PUBLIC_URL is not set, so I don't know the "
                              "instance's public address – can't link the map.",
+        "subscribed_on": "🔔 You'll now get a copy of every saved place, even "
+                         "when someone else sends it.",
+        "subscribed_off": "🔕 Copies of other people's saves are turned off.",
+        # {sender} = who sent it, {reply} = the normal "saved" confirmation text
+        "subscriber_notify": "👤 {sender} added a new place:\n\n{reply}",
         # {commands} is filled in by help_text() from the BOT_COMMANDS registry
         "help": "📖 What I can do:\n\n"
                 "🎬 Send me a video URL (Facebook/Instagram Reels, TikTok, "
@@ -252,6 +262,14 @@ BOT_COMMANDS = [
         "arg": "",
         "desc": {"cs": "Pošle read-only odkaz na mapu",
                  "en": "Send a read-only link to the map"},
+    },
+    {
+        "key": "subscribe",
+        "name": {"cs": "odber", "en": "subscribe"},
+        "extra_aliases": (),
+        "arg": "",
+        "desc": {"cs": "Zapne/vypne kopii uložení i od ostatních odesílatelů",
+                 "en": "Toggle a copy of saves from other senders too"},
     },
     {
         "key": "id",
