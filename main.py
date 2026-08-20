@@ -142,6 +142,12 @@ app = FastAPI(lifespan=lifespan)
 # Holds strong references to running background tasks so the GC does not collect them mid-run.
 _background_tasks: set = set()
 
+# yt-dlp/YoutubeDL is not safe to run concurrently - two overlapping extract_info()
+# calls have been observed to cross-contaminate results (one video's thumbnail
+# ending up saved under a different, unrelated video's row). Serializing downloads
+# closes that race; the slower analyze()/geocode()/Sheets steps still run unlocked.
+_download_lock = asyncio.Lock()
+
 
 # Shared HTTP client for the Telegram API – created lazily on first call
 # (so CLI --set-webhook works outside the lifespan too), closed on shutdown.
@@ -330,8 +336,9 @@ async def process_video(chat_id: int, url: str, sender: str = "") -> None:
 
         await send_message(chat_id, t("processing"))
 
-        # 2) Download the video
-        media_path, yt_info = await asyncio.to_thread(download_media, url)
+        # 2) Download the video (serialized - see _download_lock)
+        async with _download_lock:
+            media_path, yt_info = await asyncio.to_thread(download_media, url)
 
         # 3) Duplicate check by video ID (also catches a different link form of the same video)
         video_id = str(yt_info.get("id") or "")
