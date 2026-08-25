@@ -46,6 +46,7 @@ def make_place(**overrides) -> dict:
         "place_id": "",
         "maps_url": "",
         "geo_source": "gemini",
+        "country": "",
     }
     place.update(overrides)
     return place

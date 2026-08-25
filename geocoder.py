@@ -91,6 +91,41 @@ def geocode(name: str, city: str = "") -> dict | None:
         return None
 
 
+_REVERSE_GEOCODE_ENDPOINT = "https://maps.googleapis.com/maps/api/geocode/json"
+
+
+def reverse_geocode_country(lat: float, lng: float) -> str:
+    """Country name for a coordinate (localized, e.g. "Rakousko" not "Austria"),
+    via the classic Geocoding API's reverse geocoding - result_type=country
+    keeps the response down to just the country component. Requires the
+    Geocoding API to be enabled on the project (separate from Places API
+    (New), which the rest of this module uses).
+
+    Best-effort like geocode(): "" if the key is missing, no country is
+    found, or the request fails - never raises."""
+    key = os.getenv("GOOGLE_MAPS_API_KEY")
+    if not key or (lat == 0 and lng == 0):
+        return ""
+    try:
+        r = httpx.get(
+            _REVERSE_GEOCODE_ENDPOINT,
+            params={"latlng": f"{lat},{lng}", "result_type": "country",
+                    "language": "cs", "key": key},
+            timeout=15,
+        )
+        r.raise_for_status()
+        results = r.json().get("results") or []
+        if not results:
+            return ""
+        for comp in results[0].get("address_components", []):
+            if "country" in comp.get("types", []):
+                return comp.get("long_name", "")
+        return ""
+    except Exception as e:
+        print(f"[geocoder] reverse_geocode_country error: {type(e).__name__}: {e}")
+        return ""
+
+
 def fetch_photo_name(place_id: str) -> str:
     """Look up a place's current photo reference from its place_id alone (no
     text search needed) - for backfilling a thumbnail onto a row that already

@@ -18,7 +18,7 @@ from i18n import t, command_aliases, command_name, help_text, menu_commands, LAN
 from sheets import (append_row, read_rows, set_group_ids, new_group_id,
                     find_duplicate, set_visited, delete_place_rows, find_by_place_id,
                     is_subscribed, add_subscriber, remove_subscriber, list_subscribers)
-from geocoder import geocode, maps_link, distance_km
+from geocoder import geocode, maps_link, distance_km, reverse_geocode_country
 from thumbnails import THUMB_DIR, save_thumbnail, delete_thumbnail
 from dedup import find_duplicates
 from map_page import render_map
@@ -377,6 +377,12 @@ async def process_video(chat_id: int, url: str, sender: str = "") -> None:
             metadata.maps_url = maps_link(name=metadata.location_name)
             metadata.geo_source = "gemini"
 
+        # 5b) Country, derived from the final coordinates - not a tag, see
+        # the 2026-08-25 tag audit / tags.py. Best-effort: "" without
+        # GOOGLE_MAPS_API_KEY or the Geocoding API enabled.
+        metadata.country = await asyncio.to_thread(
+            reverse_geocode_country, metadata.lat, metadata.lng)
+
         # 6) Does the same place (place_id) already exist? -> put it straight into the same group
         group_note = ""
         if metadata.place_id:
@@ -711,7 +717,7 @@ def _build_export(places: list[dict], fmt: str) -> tuple[str, str, str]:
             "geometry": {"type": "Point", "coordinates": [p["lng"], p["lat"]]},
             "properties": {
                 "name": p["location_name"], "category": p["category"],
-                "tags": p["tags"], "summary": p["summary"],
+                "tags": p["tags"], "country": p["country"], "summary": p["summary"],
                 "visited": p["visited"], "videos": p["urls"],
                 "maps_url": p["maps_url"],
             },
@@ -722,6 +728,8 @@ def _build_export(places: list[dict], fmt: str) -> tuple[str, str, str]:
 
     def desc(p):
         parts = [p["category"]]
+        if p["country"]:
+            parts.append(p["country"])
         if p["tags"]:
             parts.append(p["tags"])
         if p["summary"]:

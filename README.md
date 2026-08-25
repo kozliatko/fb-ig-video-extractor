@@ -85,7 +85,9 @@ Create API key → `GEMINI_API_KEY`. The free tier is more than enough.
 ### 4. Optional keys and settings
 - `GOOGLE_MAPS_API_KEY` — precise place coordinates (Places API New;
   without it, AI estimates are used); also supplies the map popup's photo
-  preview for places whose own video/photo has no usable thumbnail
+  preview for places whose own video/photo has no usable thumbnail, and (if
+  the separate "Geocoding API" is also enabled on the same Google Cloud
+  project) the country shown/filterable on the map
 - `ANTHROPIC_API_KEY` — duplicate-place check via the `/dedup` command
 - `MAP_TOKEN` — map protection (without it the map is public)
 - `MAP_VIEW_TOKEN` — separate read-only map token, safe to share (viewing

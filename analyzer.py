@@ -72,6 +72,9 @@ Další pravidla:
   Když žádná nesedí, použij "__FALLBACK__".
 - lat/lng: odhadni co nejpřesnější souřadnice podle konkrétního názvu místa a adresy
 - tags: max 4 tagy oddělené čárkou, bez mezer kolem čárek; piš je česky.
+  NEUVÁDĚJ do tagů zemi ani politický region (Rumunsko, Itálie, Rakousko...) -
+  ta se dopočítává zvlášť ze souřadnic. Tagy ať jsou jen témata/aktivity, nebo
+  konkrétní název místa/oblasti (Toskánsko, Dolomity apod. jsou v pořádku).
   Přednostně použij některý z těchto, pokud sedí: __TAG_HINTS__.
   Nový tag si vymysli, jen když se tam nic nehodí (typicky konkrétní název místa).
 - summary: piš česky
@@ -100,7 +103,10 @@ Other rules:
 - category: exactly one of: __CATEGORIES____HOTEL_NOTE__
   If none fits, use "__FALLBACK__".
 - lat/lng: estimate the most precise coordinates based on the specific place name and address
-- tags: max 4 comma-separated tags, no spaces around commas; write them in English
+- tags: max 4 comma-separated tags, no spaces around commas; write them in English.
+  Do NOT include the country or political region (Romania, Italy, Austria...) -
+  that is derived separately from the coordinates. Tags should be themes/
+  activities, or a specific place/area name (Tuscany, the Dolomites etc. are fine).
 - summary: write in English
 - transcript: transcript of the spoken words in their original language; for photos and videos without sound, leave an empty string""",
 }

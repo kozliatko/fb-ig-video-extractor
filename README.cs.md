@@ -82,7 +82,9 @@ Create API key → `GEMINI_API_KEY`. Free tier bohatě stačí.
 ### 4. Volitelné klíče a nastavení
 - `GOOGLE_MAPS_API_KEY` — přesné souřadnice míst (Places API New; bez něj se
   použijí odhady AI); zároveň slouží jako zdroj náhledové fotky v popup okně
-  mapy pro místa, jejichž vlastní video/fotka nemá použitelný náhled
+  mapy pro místa, jejichž vlastní video/fotka nemá použitelný náhled, a (pokud
+  je na stejném Google Cloud projektu povolené i samostatné "Geocoding API")
+  jako zdroj krajiny zobrazené/filtrovatelné na mapě
 - `ANTHROPIC_API_KEY` — kontrola duplicitních míst příkazem `/zkontroluj`
 - `MAP_TOKEN` — ochrana mapy (bez něj je mapa veřejná)
 - `MAP_VIEW_TOKEN` — samostatný read-only token mapy, bezpečný na sdílení

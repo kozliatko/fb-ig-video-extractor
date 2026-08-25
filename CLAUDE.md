@@ -83,7 +83,7 @@ The three required for any deployment: `TELEGRAM_BOT_TOKEN`, `GEMINI_API_KEY`,
 
 ## Google Sheets structure (Sheet1)
 
-| A: Date | B: URL | C: Author | D: Title | E: Place | F: Lat | G: Lng | H: Category | I: Tags | J: Summary | K: Transcript | L: Source | M: group_id | N: video_id | O: visited | P: place_id | Q: maps_url | R: geo_source | S: media_type | T: sender |
+| A: Date | B: URL | C: Author | D: Title | E: Place | F: Lat | G: Lng | H: Category | I: Tags | J: Summary | K: Transcript | L: Source | M: group_id | N: video_id | O: visited | P: place_id | Q: maps_url | R: geo_source | S: media_type | T: sender | U: country |
 
 **M: group_id** — places with the same group_id are shown on the map as a single
 pin with multiple videos. Merging is proposed by Claude Haiku (the dedup command
@@ -114,6 +114,24 @@ column existed are treated as `video`.
 `sender_name()` in `main.py`). Shown in the map popup next to each video/photo
 link. Empty for rows written before this column existed and for POI rows
 imported from My Maps (no Telegram sender).
+
+**U: country** — reverse-geocoded from the final F/G coordinates via
+`geocoder.reverse_geocode_country()` (the classic Google Geocoding API,
+`result_type=country`), so it reflects the actual location regardless of
+whether F/G came from Google Places or a Gemini estimate. Added 2026-08-25 to stop Gemini from putting the country into the tags
+column (I) - the 2026-08-24 tag audit found 562 distinct tags across 693
+rows, largely casing/diacritics duplicates of the same country names (see
+`tags.py`'s module docstring). Best-effort
+like the rest of `geocoder.py` - stays empty without `GOOGLE_MAPS_API_KEY`,
+**and also needs the Geocoding API specifically enabled** on that Google
+Cloud project (a separate API from the Places API (New) already used for
+`geocode()`/`fetch_photo_name()`). Shown in the map popup and filterable via
+its own "Country" chip group in `map_page.py`, alongside but independent of
+the tags filter. `tags.py`'s `COUNTRY_TAGS` lists the sovereign-country
+strings this replaces; `backfill_country.py` is the one-off migration for
+rows written before this column existed (fills U, then strips a matching
+country tag from I - but only for rows where U ends up non-empty, so a row
+is never left with neither, e.g. if the Geocoding API isn't enabled yet).
 
 ## Subscribers tab
 

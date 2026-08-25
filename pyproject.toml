@@ -7,6 +7,7 @@ target-version = "py311"
 "main.py" = ["E402"]
 "backfill_places.py" = ["E402"]
 "backfill_tags.py" = ["E402"]
+"backfill_country.py" = ["E402"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

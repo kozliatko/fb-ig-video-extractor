@@ -77,7 +77,8 @@ class TestToSheetsRow:
         m = VideoMetadata(url="https://fb.com/reel/1", location_name="Slaný",
                           lat=50.23, lng=14.09, category="koupání", source="facebook",
                           group_id="g1", video_id="123", place_id="ChIJx",
-                          maps_url="https://maps...", geo_source="places", sender="Jan")
+                          maps_url="https://maps...", geo_source="places", sender="Jan",
+                          country="Česko")
         row = m.to_sheets_row()
         assert len(row) == NUM_COLS
         assert row[1] == "https://fb.com/reel/1"
@@ -86,15 +87,18 @@ class TestToSheetsRow:
         assert row[14] == ""        # O: visited – filled in by the map
         assert row[15] == "ChIJx"   # P: place_id
         assert row[19] == "Jan"     # T: sender
+        assert row[20] == "Česko"   # U: country
 
     def test_roundtrip_through_parse_row(self):
         """to_sheets_row() -> _parse_row() must return consistent data."""
         m = VideoMetadata(url="https://fb.com/reel/1", location_name="Slaný",
                           lat=50.23, lng=14.09, category="koupání",
-                          source="facebook", group_id="g1", sender="Jan Novák")
+                          source="facebook", group_id="g1", sender="Jan Novák",
+                          country="Česko")
         p = _parse_row([str(v) for v in m.to_sheets_row()], 5)
         assert p["location_name"] == "Slaný"
         assert p["lat"] == 50.23
         assert p["group_id"] == "g1"
         assert p["visited"] is False
         assert p["sender"] == "Jan Novák"
+        assert p["country"] == "Česko"

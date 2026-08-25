@@ -1,7 +1,7 @@
 """Tests for the haversine distance and building Google Maps links."""
 import pytest
 
-from geocoder import distance_km, maps_link
+from geocoder import distance_km, maps_link, reverse_geocode_country
 
 
 class TestDistanceKm:
@@ -50,3 +50,15 @@ class TestMapsLink:
 
     def test_empty(self):
         assert maps_link() == ""
+
+
+class TestReverseGeocodeCountry:
+    """Only the fast, no-network paths - a real call needs a live API key."""
+
+    def test_no_api_key_returns_empty(self, monkeypatch):
+        monkeypatch.delenv("GOOGLE_MAPS_API_KEY", raising=False)
+        assert reverse_geocode_country(50.0, 14.0) == ""
+
+    def test_zero_coords_return_empty(self, monkeypatch):
+        monkeypatch.setenv("GOOGLE_MAPS_API_KEY", "fake-key")
+        assert reverse_geocode_country(0.0, 0.0) == ""

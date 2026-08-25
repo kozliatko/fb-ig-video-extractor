@@ -1,5 +1,5 @@
 """Tests for the tags.py canonical vocabulary / normalization helpers."""
-from tags import CANONICAL_TAGS, TAG_ALIASES, normalize_tag, normalize_tags_field
+from tags import CANONICAL_TAGS, COUNTRY_TAGS, TAG_ALIASES, normalize_tag, normalize_tags_field
 
 
 class TestNormalizeTag:
@@ -46,3 +46,8 @@ class TestAliasTableSanity:
     def test_canonical_tags_are_not_themselves_aliased(self):
         for tag in CANONICAL_TAGS:
             assert tag not in TAG_ALIASES, f"{tag!r} is in CANONICAL_TAGS but also a TAG_ALIASES key"
+
+    def test_country_tags_excluded_from_canonical_tags(self):
+        # country is a separate derived field now (see geocoder.reverse_geocode_country),
+        # not something Gemini should be hinted to reuse as a tag
+        assert not (COUNTRY_TAGS & set(CANONICAL_TAGS))

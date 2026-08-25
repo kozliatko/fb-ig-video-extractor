@@ -143,6 +143,14 @@ MAP_HTML = r"""<!DOCTYPE html>
     <div class="group-label" id="label-categories"></div>
     <div class="filters" id="cat-filters"></div>
     <div class="group-label group-head">
+      <span id="label-country"></span>
+      <span>
+        <button class="mini" id="country-all"></button>
+        <button class="mini" id="country-none"></button>
+      </span>
+    </div>
+    <div class="filters" id="country-filters"></div>
+    <div class="group-label group-head">
       <span id="label-tags"></span>
       <span>
         <button class="mini" id="tags-all"></button>
@@ -172,7 +180,7 @@ const TEXTS = {
     searchPlaceholder: "🔍 Hledat podle názvu, tagů, popisu…",
     locate: "Najít mě na mapě", locateFailed: "Polohu se nepodařilo zjistit: ",
     locateNoSupport: "Tento prohlížeč neumí zjistit polohu.",
-    view: "Zobrazení", categories: "Kategorie", tags: "Tagy", exportLabel: "Export",
+    view: "Zobrazení", categories: "Kategorie", country: "Krajina", tags: "Tagy", exportLabel: "Export",
     all: "vše", none: "nic", visitedOnly: "✓ jen navštívené",
     count: (shown, total) => "(" + shown + " / " + total + " míst)",
     openVideo: "Otevřít video", videoN: (n, date) => "Video " + n + " (" + date + ")",
@@ -193,7 +201,7 @@ const TEXTS = {
     searchPlaceholder: "🔍 Search by name, tags, description…",
     locate: "Find me on the map", locateFailed: "Could not get your location: ",
     locateNoSupport: "This browser can't get your location.",
-    view: "View", categories: "Categories", tags: "Tags", exportLabel: "Export",
+    view: "View", categories: "Categories", country: "Country", tags: "Tags", exportLabel: "Export",
     all: "all", none: "none", visitedOnly: "✓ visited only",
     count: (shown, total) => "(" + shown + " / " + total + " places)",
     openVideo: "Open video", videoN: (n, date) => "Video " + n + " (" + date + ")",
@@ -219,8 +227,11 @@ document.getElementById("search-box").placeholder = T.searchPlaceholder;
 document.getElementById("locate-btn").title = T.locate;
 document.getElementById("label-view").textContent = T.view;
 document.getElementById("label-categories").textContent = T.categories;
+document.getElementById("label-country").textContent = T.country;
 document.getElementById("label-tags").textContent = T.tags;
 document.getElementById("label-export").textContent = T.exportLabel;
+document.getElementById("country-all").textContent = T.all;
+document.getElementById("country-none").textContent = T.none;
 document.getElementById("tags-all").textContent = T.all;
 document.getElementById("tags-none").textContent = T.none;
 document.getElementById("visited-toggle").textContent = T.visitedOnly;
@@ -281,8 +292,9 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 map.on("click", () => setOpen(false));
 
 let CAN_EDIT = true;     // false = read-only shared view (the server hides mutations)
-const items = {};        // key -> {marker, category, tags[], visited, group[], searchText}
+const items = {};        // key -> {marker, category, country, tags[], visited, group[], searchText}
 const activeCat = {};    // category -> bool
+const activeCountry = {}; // country -> bool
 const activeTag = {};    // tag -> bool
 let visitedMode = false; // false = unvisited only, true = visited ONLY
 let searchTerm = "";     // folded (diacritics-insensitive, lowercase) free-text filter
@@ -291,6 +303,9 @@ function placeVisible(item){
   if(visitedMode !== item.visited) return false;
   if(searchTerm && !item.searchText.includes(searchTerm)) return false;
   if(!activeCat[item.category]) return false;
+  // Older rows / no GOOGLE_MAPS_API_KEY -> no country was ever derived; don't
+  // hide those behind the country filter, same as places with no tags.
+  if(item.country && !activeCountry[item.country]) return false;
   if(item.tags.length === 0) return true;
   return item.tags.some(t => activeTag[t]);
 }
@@ -321,6 +336,7 @@ function buildPopup(key){
   let html = '<img class="popup-thumb" src="'+withToken("/thumb/"+rep.thumb_key+".jpg")+'" onerror="this.remove()">';
   html += '<div class="popup-title">'+esc(rep.location_name)+'</div>';
   html += '<span class="popup-cat" style="background:'+colorFor(cat)+'">'+esc(cat)+'</span>';
+  if(item.country) html += '<div class="popup-tags">🌍 '+esc(item.country)+'</div>';
   if(item.tags.length) html += '<div class="popup-tags">🏷️ '+esc(item.tags.join(", "))+'</div>';
   if(rep.summary) html += '<div class="popup-summary">'+esc(rep.summary)+'</div>';
   group.forEach((p, i) => {
@@ -431,6 +447,23 @@ function buildCatFilters(){
   });
 }
 
+function buildCountryFilters(){
+  const box = document.getElementById("country-filters");
+  box.innerHTML = "";
+  Object.keys(activeCountry).sort((a,b)=>a.localeCompare(b,LANG)).forEach(country => {
+    const chip = document.createElement("span");
+    chip.className = "chip tag" + (activeCountry[country] ? " on" : " off");
+    chip.textContent = country;
+    chip.onclick = () => {
+      activeCountry[country] = !activeCountry[country];
+      chip.classList.toggle("on", activeCountry[country]);
+      chip.classList.toggle("off", !activeCountry[country]);
+      applyFilters();
+    };
+    box.appendChild(chip);
+  });
+}
+
 function buildTagFilters(){
   const box = document.getElementById("tag-filters");
   box.innerHTML = "";
@@ -515,8 +548,10 @@ fetch(withToken("/data")).then(r => {
     const tagSet = new Set();
     group.forEach(p => parseTags(p.tags).forEach(t => tagSet.add(t)));
     const tags = [...tagSet];
+    const country = rep.country || "";
     const visited = group.some(p => p.visited);
     activeCat[cat] = true;
+    if(country) activeCountry[country] = true;
     tags.forEach(t => activeTag[t] = true);
 
     const m = L.circleMarker([rep.lat, rep.lng], {
@@ -524,13 +559,14 @@ fetch(withToken("/data")).then(r => {
       fillColor: visited ? "#9e9e9e" : colorFor(cat), fillOpacity: 0.9
     });
     const searchText = fold(group.map(p =>
-      [p.location_name, p.author, p.title, p.summary, p.tags].join(" ")).join(" ") + " " + cat);
-    items[key] = { marker: m, category: cat, tags: tags, visited: visited, group: group, searchText: searchText };
+      [p.location_name, p.author, p.title, p.summary, p.tags].join(" ")).join(" ") + " " + cat + " " + country);
+    items[key] = { marker: m, category: cat, country: country, tags: tags, visited: visited, group: group, searchText: searchText };
     m.bindPopup(buildPopup(key));
     bounds.push([rep.lat, rep.lng]);
   });
 
   buildCatFilters();
+  buildCountryFilters();
   buildTagFilters();
   applyFilters();
 
@@ -541,6 +577,14 @@ fetch(withToken("/data")).then(r => {
   }
   document.getElementById("tags-all").onclick = () => setAllTags(true);
   document.getElementById("tags-none").onclick = () => setAllTags(false);
+
+  function setAllCountries(val){
+    Object.keys(activeCountry).forEach(c => activeCountry[c] = val);
+    buildCountryFilters();
+    applyFilters();
+  }
+  document.getElementById("country-all").onclick = () => setAllCountries(true);
+  document.getElementById("country-none").onclick = () => setAllCountries(false);
 
   if(bounds.length) map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
 }).catch(e => {

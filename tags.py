@@ -85,17 +85,30 @@ TAG_ALIASES: dict[str, str] = {
 # Curated core vocabulary: canonical tags with >=8 uses after aliasing.
 # Not an enforced whitelist (yet) - a reference for what already recurs
 # often, e.g. to guide a future analyzer.py prompt change.
+# Deliberately excludes country names (see COUNTRY_TAGS below) - since
+# 2026-08-25 the country is reverse-geocoded from lat/lng instead (see
+# geocoder.reverse_geocode_country / main.py), not stored as a tag.
 CANONICAL_TAGS = [
-    'příroda', 'historie', 'turistika', 'hory', 'Rumunsko', 'výlet', 'kemp',
-    'Itálie', 'outdoor', 's dětmi', 'ubytování', 'Toskánsko', 'pláž',
-    'památky', 'jezero', 'architektura', 'vyhlídka', 'hrad', 'Rakousko',
-    'památka', 'moře', 'koupání', 'vodopád', 'UNESCO', 'Polsko', 'město',
-    'dovolená', 'Slovensko', 'jeskyně', 'kempování', 'skály', 'výhled',
+    'příroda', 'historie', 'turistika', 'hory', 'výlet', 'kemp',
+    'outdoor', 's dětmi', 'ubytování', 'Toskánsko', 'pláž',
+    'památky', 'jezero', 'architektura', 'vyhlídka', 'hrad',
+    'památka', 'moře', 'koupání', 'vodopád', 'UNESCO', 'město',
+    'dovolená', 'jeskyně', 'kempování', 'skály', 'výhled',
     'rodiny', 'soutěska', 'národní park', 'muzeum', 'vanlife', 'vesnice',
-    'řeka', 'alpy', 'cyklistika', 'Černá Hora', 'Dolomity', 'středověk',
+    'řeka', 'alpy', 'cyklistika', 'Dolomity', 'středověk',
     'zámek', 'cestování', 'děti', 'víno', 'kaňon', 'relaxace', 'klášter',
     'restaurace', 'geologie', 'park', 'gastronomie', 'Dunaj',
 ]
+
+# Sovereign country names found in the pre-2026-08-25 tag data (as political
+# entities - NOT sub-national regions like Toskánsko/Dolomity/Dalmácie/Istrie,
+# which stay as regular tags). Used by backfill_country.py to strip these out
+# of the tags column now that the country is a separate, derived field.
+COUNTRY_TAGS = {
+    'Rumunsko', 'Itálie', 'Rakousko', 'Polsko', 'Slovensko', 'Chorvatsko',
+    'Slovinsko', 'Švýcarsko', 'Albánie', 'Černá Hora', 'Srbsko', 'Německo',
+    'Maďarsko', 'Francie', 'Bosna a Hercegovina', 'Bulharsko',
+}
 
 
 def normalize_tag(tag: str) -> str:
