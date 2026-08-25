@@ -6,6 +6,7 @@ from google.genai import errors, types
 from extractor import extract_source
 from i18n import CATEGORIES, FALLBACK_CATEGORY, LANG, t
 from models import VideoMetadata
+from tags import CANONICAL_TAGS, normalize_tags_field
 
 GEMINI_MODEL = "gemini-3.6-flash"
 
@@ -70,7 +71,9 @@ Další pravidla:
 - category: právě jedna z: __CATEGORIES____HOTEL_NOTE__
   Když žádná nesedí, použij "__FALLBACK__".
 - lat/lng: odhadni co nejpřesnější souřadnice podle konkrétního názvu místa a adresy
-- tags: max 4 tagy oddělené čárkou, bez mezer kolem čárek; piš je česky
+- tags: max 4 tagy oddělené čárkou, bez mezer kolem čárek; piš je česky.
+  Přednostně použij některý z těchto, pokud sedí: __TAG_HINTS__.
+  Nový tag si vymysli, jen když se tam nic nehodí (typicky konkrétní název místa).
 - summary: piš česky
 - transcript: přepis mluveného slova z videa v původním jazyce; u fotek a videí bez zvuku nech prázdný řetězec""",
     "en": """You are an AI assistant that analyzes travel videos and photos. You get the video or photo itself, its caption and URL.
@@ -160,11 +163,15 @@ This is a photo with no sound, leave the transcript field empty.''',
 def system_prompt() -> str:
     """System prompt in the bot's language with the categories from the configuration."""
     hotel_note = _HOTEL_NOTE[LANG] if "hotel" in CATEGORIES else ""
+    # CANONICAL_TAGS is a Czech vocabulary curated from the existing sheet
+    # data (see tags.py) - only makes sense to hint in the cs prompt.
+    tag_hints = ", ".join(CANONICAL_TAGS) if LANG == "cs" else ""
     return (_SYSTEM_PROMPT_TEMPLATES[LANG]
             .replace("__CATEGORIES__", ", ".join(CATEGORIES))
             .replace("__CATEGORY_EXAMPLE__", CATEGORIES[0])
             .replace("__FALLBACK__", FALLBACK_CATEGORY)
-            .replace("__HOTEL_NOTE__", hotel_note))
+            .replace("__HOTEL_NOTE__", hotel_note)
+            .replace("__TAG_HINTS__", tag_hints))
 
 
 # Gemini occasionally answers 503 "currently experiencing high demand", and
@@ -259,7 +266,7 @@ def parse_metadata(raw: str, url: str, author: str = "", title: str = "") -> Vid
         lat=_safe_float(data.get("lat")),
         lng=_safe_float(data.get("lng")),
         category=data.get("category", FALLBACK_CATEGORY),
-        tags=data.get("tags", ""),
+        tags=normalize_tags_field(data.get("tags", "")),
         summary=data.get("summary", ""),
         transcript=data.get("transcript", ""),
         source=extract_source(url),

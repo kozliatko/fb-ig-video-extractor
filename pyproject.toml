@@ -6,6 +6,7 @@ target-version = "py311"
 # load_dotenv() must run before importing modules that read env at import time
 "main.py" = ["E402"]
 "backfill_places.py" = ["E402"]
+"backfill_tags.py" = ["E402"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

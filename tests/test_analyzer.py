@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from analyzer import _safe_float, parse_metadata, strip_fences
+from analyzer import _safe_float, parse_metadata, strip_fences, system_prompt
 
 GEMINI_JSON = json.dumps({
     "transcript": "Ahoj, dneska jsme na koupališti ve Slaném.",
@@ -44,6 +44,11 @@ class TestParseMetadata:
         assert m.author == "Cestovatel"
         assert m.url == "https://www.facebook.com/reel/123"
 
+    def test_tags_are_normalized(self):
+        raw = json.dumps({"tags": "priroda,příroda,rakousko"}, ensure_ascii=False)
+        m = parse_metadata(raw, "https://www.facebook.com/reel/1")
+        assert m.tags == "příroda,Rakousko"
+
     def test_source_from_url(self):
         assert parse_metadata("{}", "https://www.instagram.com/reel/x").source == "instagram"
         assert parse_metadata("{}", "https://www.facebook.com/reel/x").source == "facebook"
@@ -82,6 +87,14 @@ class TestSafeFloat:
 
     def test_string_with_comma(self):
         assert _safe_float("50,5") == 50.5
+
+
+class TestSystemPromptTagHints:
+    def test_czech_prompt_includes_canonical_tags(self):
+        # conftest pins BOT_LANGUAGE=cs
+        sp = system_prompt()
+        assert "příroda" in sp and "historie" in sp
+        assert "__TAG_HINTS__" not in sp
 
     def test_none_is_zero(self):
         assert _safe_float(None) == 0.0
