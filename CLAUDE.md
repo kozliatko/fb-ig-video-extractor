@@ -132,6 +132,10 @@ strings this replaces; `backfill_country.py` is the one-off migration for
 rows written before this column existed (fills U, then strips a matching
 country tag from I - but only for rows where U ends up non-empty, so a row
 is never left with neither, e.g. if the Geocoding API isn't enabled yet).
+*(run against production on 2026-08-25 after enabling the Geocoding API:
+all 693 existing rows now have U filled - 24 distinct countries - and 286
+of them had their now-redundant country tag stripped from I, dropping the
+distinct-tag count from 508 to 492.)*
 
 ## Subscribers tab
 
