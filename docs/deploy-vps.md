@@ -295,7 +295,11 @@ empty `last_error_message`.
 - [ ] Telegram: send a real Reel link → a reply comes back and a row appears
       in Google Sheets
 - [ ] Telegram: `/help`, `/search <text>` (`/hledej`), `/dedup` (`/zkontroluj`)
-- [ ] Map: `https://mybot.duckdns.org/map?token=<MAP_TOKEN>` shows pins
+- [ ] Map: `https://mybot.duckdns.org/map?token=<MAP_TOKEN>` shows pins **and** the map tiles
+      themselves load (a watermarked/blank background usually means `CARTO_API_KEY` is
+      missing/invalid, or it has a Referer allowlist configured that doesn't include this
+      deployment's own domain — an unrestricted key works from anywhere. Pins still render
+      either way, so check the tiles specifically, not just that the page loads)
 
 ---
 
